@@ -1,0 +1,279 @@
+---
+title: "Human Development Indicators"
+subtitle: "Analysis of Iceland and Germany"
+author: "Davina Jonathan"
+format:
+  revealjs:
+    theme: sky
+    css: sky.css
+---
+
+## **Introduction**
+
+-   Introduce the Human Development Indicators (HDI) dataset, encompassing essential socio-economic metrics.
+
+-   Perform data cleaning and merging operations efficiently using data.table in R.
+
+-   Explore and analyze the HDI data for Singapore and Switzerland, focusing on key indicators of human development.
+
+-   Visualize and interpret key findings using insightful plots and charts generated in R.
+
+## **Data Preparation**
+
+-   Loading and preparing data using data.table in R.
+
+-   Reading CSV files for Iceland and Germany to initialize datasets.
+
+    **Code:**
+
+    Load the Iceland and Germany data
+
+    iceland \<- fread("hdro_indicators_isl.csv") germany \<- fread("hdro_indicators_deu.csv")
+
+```{r}
+library(data.table)
+
+# Load the Iceland and Germany data
+iceland <- fread("hdro_indicators_isl.csv")
+germany <- fread("hdro_indicators_deu.csv")
+
+# Display the structure
+str(iceland)
+str(germany)
+```
+
+## **Remove the Missing Data**
+
+Check for missing values and remove them
+
+**Code:**
+
+Remove non-numeric values from Iceland dataset
+
+iceland \<- iceland\[!is.na(as.numeric(value)), \]
+
+Remove non-numeric values from Germany dataset
+
+germany \<- germany\[!is.na(as.numeric(value)), \]
+
+Convert columns to appropriate data types after cleaning
+
+iceland\[, `:=` (value = as.numeric(value), year = as.integer(year))\] germany\[, `:=` (value = as.numeric(value), year = as.integer(year))\]
+
+Handle missing values
+
+iceland \<- na.omit(iceland) germany \<- na.omit(germany)
+
+```{r}
+# Identify non-numeric values in the 'value' column for Iceland
+non_numeric_iceland <- iceland[!is.na(as.numeric(value)) == FALSE]
+
+# Identify non-numeric values in the 'value' column for Germany
+non_numeric_germany <- germany[!is.na(as.numeric(value)) == FALSE]
+
+# Display the problematic values
+print(non_numeric_iceland)
+print(non_numeric_germany)
+
+# Remove non-numeric values from Iceland dataset
+iceland <- iceland[!is.na(as.numeric(value)), ]
+
+# Remove non-numeric values from Germany dataset
+germany <- germany[!is.na(as.numeric(value)), ]
+
+# Convert columns to appropriate data types after cleaning
+iceland[, `:=` (value = as.numeric(value), year = as.integer(year))]
+germany[, `:=` (value = as.numeric(value), year = as.integer(year))]
+
+# Handle missing values
+iceland <- na.omit(iceland)
+germany <- na.omit(germany)
+```
+
+## **Merging the Two Datasets For Study**
+
+Merging the two datasets to analyze them for a better study.
+
+**Code:**
+
+Add a country column
+
+iceland\[, country := "Iceland"\] germany\[, country := "Germany"\]
+
+Merge the datasets
+
+merged_data \<- rbindlist(list(iceland, germany))
+
+Check if merged data is correctly formed
+
+head(merged_data)
+
+```{r}
+# Remove non-numeric values and convert columns to appropriate data types
+iceland <- iceland[!is.na(as.numeric(value)), ]
+germany <- germany[!is.na(as.numeric(value)), ]
+
+iceland[, `:=` (value = as.numeric(value), year = as.integer(year))]
+germany[, `:=` (value = as.numeric(value), year = as.integer(year))]
+
+# Add a country column
+iceland[, country := "Iceland"]
+germany[, country := "Germany"]
+
+# Merge the datasets
+merged_data <- rbindlist(list(iceland, germany))
+
+# Check if merged data is correctly formed
+head(merged_data)
+
+```
+
+## **Data Cleaning For Analysis On Merged Data**
+
+Clean the data to remove outliers.
+
+**Code:**
+
+merged_data \<- merged_data\[value \>= 0 & value \<= 1000\]
+
+Check for remaining non-numeric values in 'value' column
+
+non_numeric_values \<- merged_data\[is.na(as.numeric(value))\] print(non_numeric_values) \# Should be empty if all values are numeric
+
+Convert 'value' to numeric after cleaning
+
+merged_data\[, value := as.numeric(value)\]
+
+```{r}
+merged_data <- merged_data[value >= 0 & value <= 1000]   
+
+# Check for remaining non-numeric values in 'value' column
+non_numeric_values <- merged_data[is.na(as.numeric(value))]
+print(non_numeric_values)  # Should be empty if all values are numeric
+
+# Convert 'value' to numeric after cleaning
+merged_data[, value := as.numeric(value)]
+
+```
+
+## **Summary of Data**
+
+Summarize the two datasets for clear understanding of the data
+
+**Code:**
+
+Summary of cleaned data
+
+summary(merged_data)
+
+Check unique indicators and years again
+
+unique_ind \<- unique(merged_data$indicator_name) unique_y <- unique(merged_data$year)
+
+print(unique_ind) print(unique_y)
+
+```{r}
+# Summary of cleaned data
+summary(merged_data)
+
+# Check unique indicators and years again
+unique_ind <- unique(merged_data$indicator_name)
+unique_y <- unique(merged_data$year)
+
+print(unique_ind)
+print(unique_y)
+```
+
+## **Graphical Presentation**
+
+The following slides depict the graphical interpretation of the variables. Mean years of schooling and the Carbon dioxide emissions have been analyzed and visualized in the upcoming slides.
+
+## **Analysis of Mean Years of Schooling**
+
+```{r}
+library(ggplot2)
+# Filter data for Mean Years of Schooling
+mean_schooling <- merged_data[indicator_name == "Mean Years of Schooling (years)",
+                              .(mean_value = mean(value, na.rm = TRUE)),
+                              keyby = .(country, year)]
+
+# Plot: Mean Years of Schooling Over Time (Bar Plot)
+plot_mean_schooling_bar <- ggplot(mean_schooling, aes(x = as.factor(year), y = mean_value, fill = country)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(title = "Mean Years of Schooling Over Time",
+       x = "Year",
+       y = "Mean Years of Schooling (years)",
+       fill = "Country") +
+  theme_minimal()
+
+# Display the plot
+print(plot_mean_schooling_bar)
+```
+
+## **Interpretation**
+
+1.  The graph depicts a steady increase in mean years of schooling in the United States over time, illustrating improved educational attainment.
+
+2.  It showcases trends in educational progression with "Mean Years of Schooling (years)" on the y-axis and "Year" on the x-axis.
+
+3.  While the exact scale of the y-axis isn't labeled, the graph clearly demonstrates higher mean years of schooling in 2022 compared to 1990, reflecting educational advancement.
+
+## **Analysis of Carbon Dioxide Emissions per Capita**
+
+```{r}
+# Filter data for CO2 emissions per capita
+co2_emissions <- merged_data[indicator_name == "Carbon dioxide emissions per capita (production) (tonnes)",
+                             .(mean_value = mean(value, na.rm = TRUE)),
+                             keyby = .(country, year)]
+
+# Plot: CO2 Emissions per Capita Over Time (Area Plot)
+plot_co2_emissions_area <- ggplot(co2_emissions, aes(x = year, y = mean_value, fill = country)) +
+  geom_area(position = "identity") +
+  labs(title = "CO2 Emissions per Capita Over Time",
+       x = "Year",
+       y = "CO2 Emissions per Capita (tonnes)",
+       fill = "Country") +
+  theme_minimal()
+
+# Display the plot
+print(plot_co2_emissions_area)
+```
+
+## **Code for Plots**
+
+**Mean Schooling:**
+
+mean_schooling \<- merged_data\[indicator_name == "Mean Years of Schooling (years)", .(mean_value = mean(value, na.rm = TRUE)), keyby = .(country, year)\]
+
+**Carbon Emissions:**
+
+Filter data for CO2 emissions per capita
+
+co2_emissions \<- merged_data\[indicator_name == "Carbon dioxide emissions per capita (production) (tonnes)", .(mean_value = mean(value, na.rm = TRUE)), keyby = .(country, year)\]
+
+## **Interpretation** 
+
+1.  The graph depicts an increasing trend in CO2 emissions per capita for Germany over time, indicating rising average emissions.
+
+2.  It shows changes in emissions levels with "CO2 Emissions (tonnes)" on the y-axis and "Year" on the x-axis.
+
+3.  While specific values aren't labeled, the graph highlights higher CO2 emissions per capita in Germany in 2020 compared to 1990, signaling a notable increase in carbon output.\
+
+## **Uncovering Insights**
+
+4.  The dataset encompasses a comprehensive array of human development indicators crucial for evaluating socio-economic progress and well-being across countries.
+    -   Key focus areas include:
+        -   **Health and Life Expectancy:** Monitoring trends in life expectancy at birth and maternal mortality ratios provides insights into healthcare access and quality.
+        -   **Education:** Metrics such as mean years of schooling and literacy rates gauge educational attainment levels and their impact on social mobility.
+        -   **Economic Participation:** Indicators like labor force participation rates and GDP per capita highlight economic opportunities and income disparities.
+        -   **Environmental Sustainability:** Metrics such as carbon dioxide emissions per capita and material footprint assess environmental impact and sustainability efforts.
+        -   **Social Inequality:** Measures like gender disparities in political representation and income inequality indices reflect societal inclusivity and equity.
+    -   The dataset spans from 1990 to 2022, enabling longitudinal analysis of trends and policy effectiveness in addressing developmental challenges.
+    -   It facilitates comparative studies across diverse regions and income groups, offering insights into global disparities and progress towards achieving sustainable development goals (SDGs).
+    -   By examining indicators across multiple dimensions, the dataset supports evidence-based policymaking aimed at enhancing human capabilities, reducing inequalities, and promoting inclusive growth globally.
+
+## **References**
+
+Germany Dataset: "<https://data.humdata.org/dataset/hdro-data-for-germany>"
+
+Iceland Dataset: "<https://data.humdata.org/dataset/hdro-data-for-iceland>"
