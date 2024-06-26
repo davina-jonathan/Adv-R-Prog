@@ -1,6 +1,6 @@
 ---
 title: "Human Development Indicators"
-subtitle: "Analysis of Iceland and Germany"
+subtitle: "Analysis of Human Indicators of Iceland and Germany"
 author: "Davina Jonathan"
 format:
   revealjs:
@@ -10,7 +10,7 @@ format:
 
 ## **Introduction**
 
--   Introduce the Human Development Indicators (HDI) dataset, encompassing essential socio-economic metrics.
+-   Introducing the Human Development Indicators (HDI) dataset, encompassing essential socio-economic metrics.
 
 -   Perform data cleaning and merging operations efficiently using data.table in R.
 
